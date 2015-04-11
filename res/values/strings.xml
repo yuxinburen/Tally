@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Tally</string>
+    <string name="survey">概况</string>
+    <string name="all">全部账单</string>
+    <string name="month">每月概况</string>
+    
+    <array name="tabArray">
+        <item>概况</item>
+        <item>全部账单</item>
+        <item>每月概况</item>
+    </array>
+</resources>
