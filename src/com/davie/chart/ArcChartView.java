@@ -35,10 +35,9 @@ public class ArcChartView extends View {
      */
     private RectF arcRect;
 
-
     private Bitmap bitmap;
 
-    private int [][] data ;
+    private float [][] data ;
     /**
      *
      * @param context
@@ -56,8 +55,7 @@ public class ArcChartView extends View {
 
     }
 
-
-    public  void setData(int [][] data){
+    public  void setData(float [][] data){
         this.data = data;
         if(data!=null){
             //所有的控件都有的方法,进行刷新操作
@@ -74,7 +72,7 @@ public class ArcChartView extends View {
         canvas.drawColor(Color.WHITE);
 
         if(data!=null){
-            int [] start = data[1];
+            float [] start = data[1];
         }
 
         //画绿色的半圆

@@ -1,62 +1,57 @@
 package com.davie.adapter;
 
 import android.content.Context;
-import android.database.Cursor;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 import com.davie.tally.R;
-import com.davie.utils.DateUtils;
-import com.davie.utils.MySQLiteOpenHelper;
+import com.davie.utils.DbUtilsHelper;
+import model.Base;
+import model.Category;
+import model.Type;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * User: davie
  * Date: 15-4-10
  */
-public class ListViewMenuAdapter extends BaseAdapter {
-
+public class ListViewMenuAdapter<T> extends BaseAdapter {
     private static final String TAG = "ListViewAdapter";
+    private DbUtilsHelper dbUtilsHelper;
     private Context context;
-    private List<Map<String, Object>> list;
-
-    public List<Map<String, Object>> getList(){
-        return list;
-    }
-
-    //数据库帮助类
-    MySQLiteOpenHelper helper;
-
-    public void loadDataCategory(String type_id){
-        String sql = " select category name from tb_category where type_id = ? ";
-        Cursor cursor = helper.selectCursor(sql,new String[]{type_id});
-        List<Map<String,Object>> data = helper.cursorToList(cursor);
-        list.addAll(data);
-    }
-
-    public void loadDataTpye(){
-        String sql = " select type name from tb_type where _id > 1 ";
-        Cursor cursor = helper.selectCursor(sql,null);
-        List<Map<String,Object>> data = helper.cursorToList(cursor);
-        list.addAll(data);
-    }
+    private  List<T> list;
 
     public ListViewMenuAdapter(Context context) {
         super();
+        if (context == null) {
+            throw new IllegalArgumentException(" The context must not null ");
+        }
         this.context = context;
-        list = new ArrayList<Map<String, Object>>();
-        helper = new MySQLiteOpenHelper(context);
+        list = new ArrayList<T>();
+        dbUtilsHelper = DbUtilsHelper.getInstance(context);
     }
 
-    public void add(List<Map<String, Object>> data) {
-        list.addAll(data);
-        Log.e(TAG, ">>>>>>>>>>>" + list.size());
+    public List<T> getList(){
+        return list;
+    }
+
+    public void loadDataCategory(String type_id){
+        for (Category category : dbUtilsHelper.loadCategory()) {
+            T t = (T)category;
+            list.add(t);
+        }
+    }
+
+    public void loadDataTpye(){
+        list.clear();
+        for (Type type : dbUtilsHelper.loadType()) {
+            T t = (T)type;
+            list.add(t);
+        }
     }
 
     @Override
@@ -90,12 +85,11 @@ public class ListViewMenuAdapter extends BaseAdapter {
             viewHolder = (ViewHolder) convertView.getTag();
         }
 
-        viewHolder.name_item_listview_menu.setText(list.get(position).get("name")
-                .toString());
+        viewHolder.name_item_listview_menu.setText(((Base)list.get(position)).getName());
         return convertView;
     }
 
-    class ViewHolder {
-        TextView name_item_listview_menu;//类型:收入或者支出
+    private static class ViewHolder {
+        private TextView name_item_listview_menu;//类型:收入或者支出
     }
 }

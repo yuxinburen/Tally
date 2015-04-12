@@ -2,6 +2,7 @@ package com.davie.utils;
 
 import android.widget.DatePicker;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -11,6 +12,23 @@ import java.util.Date;
  * Date: 15-4-10
  */
 public class DateUtils {
+
+    public static String toDay(){
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        String today = simpleDateFormat.format(new Date().getTime());
+        return today;
+    }
+
+    public static Date string2Date(String time){
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat();
+        try {
+            Date date = simpleDateFormat.parse(time);
+            return date;
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
     public static int [] getCurrentDate(){
         Calendar calendar = Calendar.getInstance();

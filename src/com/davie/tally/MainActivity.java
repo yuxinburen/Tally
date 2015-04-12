@@ -12,15 +12,19 @@ import android.widget.*;
 import com.davie.adapter.ListViewAdapter;
 import com.davie.adapter.ListViewMenuAdapter;
 import com.davie.utils.DateUtils;
-import com.davie.utils.MySQLiteOpenHelper;
+import com.davie.utils.DbUtilsHelper;
 import com.lidroid.xutils.ViewUtils;
 import com.lidroid.xutils.view.annotation.ViewInject;
 import com.lidroid.xutils.view.annotation.event.OnClick;
 import com.lidroid.xutils.view.annotation.event.OnRadioGroupCheckedChange;
+import model.Category;
+import model.Detail;
+import model.Type;
+import org.apache.http.impl.client.DefaultTargetAuthenticationHandler;
 
 import java.io.DataOutputStream;
-import java.util.List;
-import java.util.Map;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 public class MainActivity extends Activity {
 
@@ -67,15 +71,18 @@ public class MainActivity extends Activity {
     //listView适配器
     private ListViewAdapter adapter;
 
-    //数据库
-    private MySQLiteOpenHelper helper;
-
     //对话框
     private AlertDialog.Builder builder;
     private AlertDialog alertDialog;
 
     //单选按钮的选择对象
     private int radioChoice;
+
+    private DbUtilsHelper dbUtilsHelper;
+
+    //选择菜单对象
+    private List<Type> typeList;
+    private List<Category> categoryList;
 
     /**
      * Called when the activity is first created.
@@ -90,19 +97,25 @@ public class MainActivity extends Activity {
     }
 
     public void init() {
-        helper = new MySQLiteOpenHelper(this);
+        //单选组
         radioChoice = radiogroup_main.getCheckedRadioButtonId();
-        listView_today.setEmptyView(textview_empty);
+        //数据库工具类
+        dbUtilsHelper = DbUtilsHelper.getInstance(this);
+        //弹出对话框
+        builder = new AlertDialog.Builder(this);
+
+        //选择菜单:type和category
+        categoryList = new ArrayList<Category>();
+        typeList = new ArrayList<Type>();
+
+
+        //今日收支情况
         adapter = new ListViewAdapter(this);
-        adapter.loadData();
+        listView_today.setEmptyView(textview_empty);
         listView_today.setAdapter(adapter);
 
-        final int[] date = DateUtils.getCurrentDate();
-        button_date.setText(date[0] + "-" + date[1] + "-" + date[2]);
-        int[] time = DateUtils.getCurrentTime();
-        button_time.setText(time[0] + ":" + time[1]);
-
-        builder = new AlertDialog.Builder(this);
+        //初始化界面
+        clear();
     }
 
     @OnRadioGroupCheckedChange(R.id.radiogroup_main)
@@ -120,12 +133,12 @@ public class MainActivity extends Activity {
     }
 
     //历史按钮和保存按钮
-    @OnClick({R.id.button_count,R.id.button_type, R.id.button_category, R.id.button_date, R.id.button_time, R.id.button_history, R.id.button_save})
+    @OnClick({R.id.button_count, R.id.button_type, R.id.button_category, R.id.button_date, R.id.button_time, R.id.button_history, R.id.button_save})
     public void onclick(View view) {
         Intent intent = new Intent();
         switch (view.getId()) {
             case R.id.button_count:
-                intent.setClass(this,AccountActivity.class);
+                intent.setClass(this, AccountActivity.class);
                 startActivity(intent);
                 break;
             case R.id.button_type:
@@ -141,24 +154,14 @@ public class MainActivity extends Activity {
                 choiceTime();
                 break;
             case R.id.button_history:
-                intent.setClass(this,AccountActivity.class);
+                intent.setClass(this, AccountActivity.class);
                 startActivity(intent);
                 break;
             case R.id.button_save:
-                String money = editText_money.getText().toString();
-                if (money != null) {
-                    if (addData()) {
-                        editText_money.setText("");
-                        editText_note.setText("");
-                        Toast.makeText(this, "保存成功", Toast.LENGTH_SHORT).show();
-                        adapter.reload();
-                    }
-                }
+                addData();
                 break;
         }
     }
-
-    private List<Map<String, Object>> data;
 
     //选择类型
     public void choiceType() {
@@ -169,24 +172,24 @@ public class MainActivity extends Activity {
         } else {
             View view = getLayoutInflater().inflate(R.layout.item_menu_out_category, null);
             ListView listView_type = (ListView) view.findViewById(R.id.listview_menu_out);
-            ListViewMenuAdapter menuAdapter = new ListViewMenuAdapter(this);
+            ListViewMenuAdapter<Type> menuAdapter = new ListViewMenuAdapter<Type>(this);
             menuAdapter.loadDataTpye();
-            data = menuAdapter.getList();
+            typeList = menuAdapter.getList();
             listView_type.setAdapter(menuAdapter);
             listView_type.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                    String name = data.get(i).get("name").toString();
+                    String name = typeList.get(i).getName();
                     button_type.setText(name);
-                    if("衣服".equals(name)){
+                    if ("衣服".equals(name)) {
                         button_category.setText("自己穿");
-                    }else if("饮食".equals(name)){
+                    } else if ("饮食".equals(name)) {
                         button_category.setText("三餐");
-                    }else if("住宿".equals(name)){
+                    } else if ("住宿".equals(name)) {
                         button_category.setText("房租");
-                    }else if("交通".equals(name)){
+                    } else if ("交通".equals(name)) {
                         button_category.setText("公共");
-                    }else if("生活".equals(name)){
+                    } else if ("生活".equals(name)) {
                         button_category.setText("娱乐");
                     }
                     alertDialog.cancel();
@@ -195,9 +198,9 @@ public class MainActivity extends Activity {
             builder.setView(view);
             alertDialog = builder.create();
             alertDialog.show();
-
         }
     }
+
 
     //选择明细
     public void choiceCategory() {
@@ -207,12 +210,13 @@ public class MainActivity extends Activity {
         String type = button_type.getText().toString();
         ListViewMenuAdapter menuAdapter = new ListViewMenuAdapter(this);
         menuAdapter.loadDataCategory(type);
-        data = menuAdapter.getList();
+        categoryList = menuAdapter.getList();
         listView_menu_out.setAdapter(menuAdapter);
         listView_menu_out.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-                button_category.setText(data.get(position).get("name").toString());
+                String name = categoryList.get(position).getName();
+                button_category.setText(name);
                 alertDialog.cancel();
             }
         });
@@ -223,13 +227,12 @@ public class MainActivity extends Activity {
 
     public void choiceDate() {
         int[] date = DateUtils.getCurrentDate();
-
         DatePickerDialog datePicker = new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
             @Override
             public void onDateSet(DatePicker datePicker, int i, int i1, int i2) {
                 button_date.setText(i + "-" + i1 + "-" + i2);
             }
-        }, date[0], date[1]-1, date[2]);
+        }, date[0], date[1] - 1, date[2]);
         datePicker.show();
     }
 
@@ -245,24 +248,48 @@ public class MainActivity extends Activity {
         timePicker.show();
     }
 
-
     //添加一条数据
     public boolean addData() {
         String money = editText_money.getText().toString();
-        String type = button_type.getText().toString();
-        String category = button_category.getText().toString();
-        String dt = button_date.getText().toString();
-        String tm = button_time.getText().toString();
-        String note = editText_note.getText().toString();
-        String sql = " insert into tb_detail(type_id,category_id,money,note,dt,tm) values(?,?,?,?,?,?)";
+        if (money != null) {
+            String type = button_type.getText().toString();
+            String category = button_category.getText().toString();
+            String dt = button_date.getText().toString();
+            String tm = button_time.getText().toString();
+            String note = editText_note.getText().toString();
+            float  num = type.equals("收入") ? Float.parseFloat(money)  : Float.parseFloat("-"+money);
 
-        if(money=="null"||money.equals("")||money==null){
-            Toast.makeText(this,"请输入数据后再保存", Toast.LENGTH_SHORT).show();
-            return  false;
-        }else {
-            String da = type.equals("收入") ? money+"" : "-"+money;
-            boolean flag = helper.execData(sql, new String[]{type, category, da, note, dt, tm});
-            return flag;
+            Detail detail = new Detail();
+            Type type1 = dbUtilsHelper.getType(type);
+            Category category1 = dbUtilsHelper.getCategory(category);
+            detail.setType(type1);
+            detail.setCategory(category1);
+            detail.setMoney(num);
+            detail.setDate(dt);
+            detail.setNote(note);
+            if(num > 0 )detail.setRemark(1);
+            else detail.setRemark(2);
+            boolean flag = dbUtilsHelper.save(detail);
+            if (flag) {
+                Toast.makeText(this, "保存成功", Toast.LENGTH_SHORT).show();
+                clear();
+                adapter.reload();
+                return true;
+            }
+            return false;
         }
+        Toast.makeText(this, "请输入数据后再保存", Toast.LENGTH_SHORT).show();
+        return false;
+    }
+
+    public void clear(){
+        editText_money.setText("");
+        editText_note.setText("");
+        button_type.setText("衣服");
+        button_category.setText("自己穿");
+        final int[] date = DateUtils.getCurrentDate();
+        button_date.setText(date[0] + "-" + date[1] + "-" + date[2]);
+        int[] time = DateUtils.getCurrentTime();
+        button_time.setText(time[0] + ":" + time[1]);
     }
 }

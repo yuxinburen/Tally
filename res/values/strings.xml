@@ -5,6 +5,27 @@
     <string name="all">全部账单</string>
     <string name="month">每月概况</string>
     
+    <array name="typeArr">
+        <item>收入</item>
+        <item>衣服</item>
+        <item>饮食</item>
+        <item>住宿</item>
+        <item>交通</item>
+    </array>
+
+    <array name="categoryArr">
+        <item>工资</item>
+        <item>外快</item>
+        <item>自己穿</item>
+        <item>礼物</item>
+        <item>三餐</item>
+        <item>请客</item>
+        <item>房租</item>
+        <item>水电</item>
+        <item>公共</item>
+        <item>出租</item>
+    </array>
+    
     <array name="tabArray">
         <item>概况</item>
         <item>全部账单</item>
