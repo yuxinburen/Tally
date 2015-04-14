@@ -6,6 +6,12 @@
         >
 
     <uses-sdk android:minSdkVersion="17"/>
+
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" />
+    <uses-feature android:name="android.hardware.camera.autofocus" />
+
     <application
             android:label="@string/app_name"
             android:icon="@drawable/ic_launcher"
@@ -21,5 +27,17 @@
         </activity>
         <activity android:name=".AccountActivity"/>
         <activity android:name=".PayOutActivity"/>
+        <activity android:name=".AllCountActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+        <activity android:name=".SaoYiSaoActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
     </application>
 </manifest>

@@ -13,12 +13,6 @@ import java.util.Date;
  */
 public class DateUtils {
 
-    public static String toDay(){
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        String today = simpleDateFormat.format(new Date().getTime());
-        return today;
-    }
-
     public static Date string2Date(String time){
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat();
         try {
@@ -32,10 +26,13 @@ public class DateUtils {
 
     public static int [] getCurrentDate(){
         Calendar calendar = Calendar.getInstance();
+
         int year = calendar.get(Calendar.YEAR);
         int month = calendar.get(Calendar.MONTH);
         int day = calendar.get(Calendar.DAY_OF_MONTH);
-        int [] date = new int[]{year,month+1,day};
+        int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
+
+        int [] date = new int[]{year,month+1,day,dayOfWeek};
         return date;
     }
 

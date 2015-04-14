@@ -3,7 +3,7 @@
     <string name="app_name">Tally</string>
     <string name="survey">概况</string>
     <string name="all">全部账单</string>
-    <string name="month">每月概况</string>
+    <string name="month">扫码</string>
     
     <array name="typeArr">
         <item>收入</item>
@@ -31,4 +31,5 @@
         <item>全部账单</item>
         <item>每月概况</item>
     </array>
+
 </resources>

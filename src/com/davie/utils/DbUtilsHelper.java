@@ -104,47 +104,9 @@ public class DbUtilsHelper {
         return null;
     }
 
-    public List<Type> loadType(){
-        try {
-            List<Type> typeList = dbUtils.findAll(Selector.from(Type.class));
-            return typeList;
-        } catch (DbException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    public List<Category> loadCategory(){
-        try {
-            List<Category> categoryList = dbUtils.findAll(Selector.from(Category.class));
-            return categoryList;
-        } catch (DbException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    public Type getType(String name){
+    public List<Detail> queryDetail(){
         WhereBuilder builder = WhereBuilder.b();
-        builder.expr("name","=",name);
-        try {
-            Type  type = dbUtils.findFirst(Selector.from(Type.class).where(builder));
-            return type;
-        } catch (DbException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    public Category getCategory(String name){
-        WhereBuilder builder = WhereBuilder.b();
-        builder.expr("name","=",name);
-        try {
-            Category  category = dbUtils.findFirst(Selector.from(Category.class).where(builder));
-            return category;
-        } catch (DbException e) {
-            e.printStackTrace();
-        }
+//        builder.and();
         return null;
     }
 
@@ -184,7 +146,6 @@ public class DbUtilsHelper {
                         map.put(key,value);
                 }
             }
-
             //支出
             WhereBuilder builder1 = WhereBuilder.b();
             builder1.and("dt", ">=", start);
@@ -200,7 +161,6 @@ public class DbUtilsHelper {
                         map.put(key,"("+value+")");
                     }else
                         map.put(key,value);
-
                 }
             }
             return map;
@@ -230,9 +190,52 @@ public class DbUtilsHelper {
             builder1.and("remark","=","2");
             List<DbModel> dbModelList = dbUtils.findDbModelAll(DbModelSelector.from(Detail.class)
                     .select(" sum(money) sum, cid, count(*) count ")
-                    .groupBy("cid")
-                    .where(builder));
+                    .where(builder).groupBy("tid"));
             return dbModelList;
+        } catch (DbException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public Type getType(String name){
+        WhereBuilder builder = WhereBuilder.b();
+        builder.expr("name","=",name);
+        try {
+            Type  type = dbUtils.findFirst(Selector.from(Type.class).where(builder));
+            return type;
+        } catch (DbException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public Category getCategory(String name){
+        WhereBuilder builder = WhereBuilder.b();
+        builder.expr("name","=",name);
+        try {
+            Category  category = dbUtils.findFirst(Selector.from(Category.class).where(builder));
+            return category;
+        } catch (DbException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public List<Type> loadType(){
+        try {
+            List<Type> typeList = dbUtils.findAll(Selector.from(Type.class));
+            return typeList;
+        } catch (DbException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public List<Category> loadCategory(){
+        try {
+            List<Category> categoryList = dbUtils.findAll(Selector.from(Category.class));
+            return categoryList;
         } catch (DbException e) {
             e.printStackTrace();
         }

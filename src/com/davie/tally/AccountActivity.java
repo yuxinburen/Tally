@@ -113,11 +113,11 @@ public class AccountActivity extends Activity {
 
         viewLists.add(survey);
         //全部账单页面
-        View all = getLayoutInflater().inflate(R.layout.linearlayout_all,null);
+        View all = getLayoutInflater().inflate(R.layout.activity_allcount,null);
 
         viewLists.add(all);
-        //month
-        View month = getLayoutInflater().inflate(R.layout.linearlayout_month,null);
+        //扫一扫
+        View month = getLayoutInflater().inflate(R.layout.main1,null);
 
         viewLists.add(month);
     }
